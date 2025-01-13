@@ -1,17 +1,21 @@
+import { useState } from 'react';
+import Draggable from 'react-draggable';
+
 import '@/App.css';
 import { Button } from '@/components/ui/button';
 import tarots from "@/consts/tarots";
-import { useState } from 'react';
-import tarotType2FileName from './utils/tarotType2FileName';
-import { MajorArcanaTitle, MinorArcanaSuit, MinorArcanaValue } from './types/tarots';
+import tarotType2FileName from '@/utils/tarotType2FileName';
+import { MajorArcanaTitle, MinorArcanaSuit, MinorArcanaValue } from '@/types/tarots';
 
 function App() {
 
   const [imageFile, setImageFile] = useState("");
+  const [isDrew, setIsDrew] = useState(false);
   const [description, setDescription] = useState("");
   const [rotation, setRotation] = useState(0);
 
-  const onClick = () => {
+  const drawTarot = () => {
+    setIsDrew(true);
     const selectedTarot = Math.round(Math.random());
     if (selectedTarot === 1) {
       const tarotTitle = Object.keys(tarots["majorArcana"])[Math.floor(Math.random() * 20)] as MajorArcanaTitle;
@@ -28,6 +32,13 @@ function App() {
     setRotation(Math.round(Math.random()));
   };
 
+  const resetTarot = () => {
+    setImageFile("");
+    setDescription("");
+    setRotation(0);
+    setIsDrew(false);
+  };
+
   return (
     <div className='
       app-content 
@@ -38,16 +49,23 @@ function App() {
       flex-col
       items-center'
     >
-      <div className='disp-area h-[70%] flex flex-col justify-center items-center gap-10'>
-        <div className='w-60'>
-          {imageFile === ""
-            ? undefined
-            : <img className={rotation ? "rotate-180" : ""} src={"/images/ws-tarots/" + imageFile} alt="" />}
-        </div>
+      <div className='disp-area w-full h-[70%] flex flex-col justify-center items-center gap-10'>
+        <Draggable
+          disabled={isDrew}
+          bounds={"parent"}
+        >
+          <div className='w-60 h-[410px]'>
+            {!isDrew
+              ? <div className='w-full h-full bg-slate-500 rounded-md' />
+              : <img className={"pointer-events-none" + rotation ? " rotate-180" : ""} src={"/images/ws-tarots/" + imageFile} alt="" />}
+          </div>
+        </Draggable>
         <p className='text-center whitespace-pre-wrap'>{description}</p>
       </div>
       <div className='control-area h-[30%] flex items-center'>
-        <Button className='' onClick={onClick}>カードを引く</Button>
+        {!isDrew
+          ? <Button onClick={drawTarot}>カードを引く</Button>
+          : <Button onClick={resetTarot}>リセット</Button>}
       </div>
     </div>
   )
