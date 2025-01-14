@@ -1,43 +1,30 @@
-import { useState } from 'react';
-import Draggable from 'react-draggable';
+import { useEffect, useState } from 'react';
 
-import '@/App.css';
 import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
+import '@/App.css';
 import tarots from "@/consts/tarots";
-import tarotType2FileName from '@/utils/tarotType2FileName';
-import { MajorArcanaTitle, MinorArcanaSuit, MinorArcanaValue } from '@/types/tarots';
+import Tarot from '@/components/Tarot/Tarot';
+import { tarot } from './types/tarots';
 
 function App() {
+  const [tarotList, setTarotList] = useState<tarot[]>([]);
+  const [isShow, setIsShow] = useState(false);
+  const [numOfTarots, setNumOfTarots] = useState(1);
 
-  const [imageFile, setImageFile] = useState("");
-  const [isDrew, setIsDrew] = useState(false);
-  const [description, setDescription] = useState("");
-  const [rotation, setRotation] = useState(0);
-
-  const drawTarot = () => {
-    setIsDrew(true);
-    const selectedTarot = Math.round(Math.random());
-    if (selectedTarot === 1) {
-      const tarotTitle = Object.keys(tarots["majorArcana"])[Math.floor(Math.random() * 20)] as MajorArcanaTitle;
-      const selectedTarotFileName = tarotType2FileName("major", tarotTitle)
-      setImageFile(selectedTarotFileName);
-      setDescription(tarots["majorArcana"][tarotTitle]);
-    } else {
-      const tarotSuit = Object.keys(tarots["minorArcana"]["suit"])[Math.floor(Math.random() * 3)] as MinorArcanaSuit;
-      const tarotValue = Object.keys(tarots["minorArcana"]["value"])[Math.floor(Math.random() * 13)] as MinorArcanaValue;
-      const selectedTarotFileName = tarotType2FileName("minor", undefined, tarotSuit, tarotValue);
-      setImageFile(selectedTarotFileName);
-      setDescription(tarotSuit + ": " + tarots["minorArcana"]["suit"][tarotSuit] + "\n" + tarotValue + ": " + tarots["minorArcana"]["value"][tarotValue]);
-    }
-    setRotation(Math.round(Math.random()));
+  const generateTarotList = (numOfTarots: number) => {
+    const selectedTarotList = tarots.generateTarotList(numOfTarots);
+    setTarotList(selectedTarotList);
   };
 
   const resetTarot = () => {
-    setImageFile("");
-    setDescription("");
-    setRotation(0);
-    setIsDrew(false);
+    generateTarotList(numOfTarots);
+    setIsShow(false);
   };
+
+  useEffect(() => {
+    generateTarotList(numOfTarots);
+  }, [numOfTarots]);
 
   return (
     <div className='
@@ -45,27 +32,32 @@ function App() {
       h-[100vh]
       w-[100vw]
       my-auto
-      flex
-      flex-col
-      items-center'
+      bg-sky-950'
     >
-      <div className='disp-area w-full h-[70%] flex flex-col justify-center items-center gap-10'>
-        <Draggable
-          disabled={isDrew}
-          bounds={"parent"}
-        >
-          <div className='w-60 h-[410px]'>
-            {!isDrew
-              ? <div className='w-full h-full bg-slate-500 rounded-md' />
-              : <img className={"pointer-events-none" + rotation ? " rotate-180" : ""} src={"/images/ws-tarots/" + imageFile} alt="" />}
-          </div>
-        </Draggable>
-        <p className='text-center whitespace-pre-wrap'>{description}</p>
+      <div className='disp-area w-full h-full flex justify-center items-center flex-wrap gap-10'>
+        {tarotList.map((tarot) =>
+          <Tarot imageFile={tarot.imageFile} isReverse={tarot.isRevers} isShow={isShow} />
+        )}
       </div>
-      <div className='control-area h-[30%] flex items-center'>
-        {!isDrew
-          ? <Button onClick={drawTarot}>カードを引く</Button>
-          : <Button onClick={resetTarot}>リセット</Button>}
+      <div className='control-area fixed bottom-10 right-10 flex gap-10 items-end'>
+        <div className='flex flex-col items-center gap-4'>
+          <div className='bg-slate-50 w-10 p-1 border-2 rounded-sm text-center'>
+            {numOfTarots}
+          </div>
+          <Slider
+            className='w-40'
+            value={[numOfTarots]}
+            onValueChange={(value) => setNumOfTarots(value[0])}
+            defaultValue={[numOfTarots]}
+            max={6}
+            min={1}
+            step={1}
+            disabled={isShow}
+          />
+        </div>
+        {!isShow
+          ? <Button className='w-[100px]' onClick={() => setIsShow(true)}>カードをめくる</Button>
+          : <Button className='w-[100px]' onClick={resetTarot}>リセット</Button>}
       </div>
     </div>
   )

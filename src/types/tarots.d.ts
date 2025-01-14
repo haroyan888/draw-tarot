@@ -38,3 +38,9 @@ export type MinorArcanaValue =
 	| "queen"
 	| "knight"
 	| "page";
+
+export type tarot = {
+	imageFile: string;
+	description: string;
+	isRevers: boolean;
+};

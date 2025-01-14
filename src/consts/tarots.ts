@@ -1,3 +1,11 @@
+import {
+	tarot,
+	MajorArcanaTitle,
+	MinorArcanaSuit,
+	MinorArcanaValue,
+} from "@/types/tarots";
+import tarotType2FileName from "@/utils/tarotType2FileName";
+
 const tarots = {
 	majorArcana: {
 		death: "方向転換、運命（さだめ）、思いきれない、堂々巡り",
@@ -46,6 +54,45 @@ const tarots = {
 			page: "若さ、未熟",
 			queen: "女性性、受容",
 		},
+	},
+	generateTarotList: function (this, numOfTarots: number) {
+		const tarots = JSON.parse(JSON.stringify(this));
+		return [...Array(numOfTarots)].map<tarot>(() => {
+			let fileName, description;
+			if (Math.round(Math.random()) === 1) {
+				const tarotTitle = Object.keys(tarots["majorArcana"])[
+					Math.floor(Math.random() * 20)
+				] as MajorArcanaTitle;
+				fileName = tarotType2FileName("major", tarotTitle);
+				description = tarots["majorArcana"][tarotTitle];
+			} else {
+				const tarotSuit = Object.keys(tarots["minorArcana"]["suit"])[
+					Math.floor(Math.random() * 3)
+				] as MinorArcanaSuit;
+				const tarotValue = Object.keys(tarots["minorArcana"]["value"])[
+					Math.floor(Math.random() * 13)
+				] as MinorArcanaValue;
+				fileName = tarotType2FileName(
+					"minor",
+					undefined,
+					tarotSuit,
+					tarotValue
+				);
+				description =
+					tarotSuit +
+					": " +
+					tarots["minorArcana"]["suit"][tarotSuit] +
+					"\n" +
+					tarotValue +
+					": " +
+					tarots["minorArcana"]["value"][tarotValue];
+			}
+			return {
+				imageFile: fileName,
+				description: description,
+				isRevers: Math.round(Math.random()) === 0,
+			};
+		});
 	},
 };
 
